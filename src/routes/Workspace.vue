@@ -1,9 +1,22 @@
 <template>
+  <Theheader />
   <h1>일해라 일</h1>
   <button @click="workspaceStore.createWorkspace">
     워크스페이스 생성
   </button>
   <section :key="$route.params.id">
+    <div class="poster">
+      <img
+        v-if="workspaceStore.workspace.poster"
+        :src="workspaceStore.workspace.poster"
+        alt="Poster" />
+      <input
+        type="file"
+        @change="selectPoster" />
+      <button @click="deletePoster">
+        이미지 삭제
+      </button>
+    </div>
     <h1
       ref="title"
       placeholder="제목없음"
@@ -29,8 +42,12 @@
 <script>
 import { mapStores } from 'pinia'
 import { useWorkspaceStore } from '~/store/workspace'
+import Theheader from '~/components/Theheader.vue'
 
 export default {
+  components: {
+    Theheader
+  },
   computed: {
     ...mapStores([useWorkspaceStore])
   },
@@ -59,6 +76,26 @@ export default {
         id: this.$route.params.id,
         title,
         content
+      })
+    },
+    selectPoster(event) {
+      const { files } = event.target
+      for(const file of files) {
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.addEventListener('load', e => {
+          e.target.result
+          this.workspaceStore.updateWorkspace({
+            id: this.$route.params.id,
+            poster: e.target.result
+          })
+        })
+      }
+    },
+    deletePoster() {
+      this.workspaceStore.updateWorkspace({
+        id: this.$route.params.id,
+        poster: '-1'
       })
     }
   }
